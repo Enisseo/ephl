@@ -90,6 +90,8 @@ piss off every existing guy, from the developer - who'd like to write some good 
 a new language - to the designer - who'd need the developer for every 20% task the engine is not able to
 manage and who have to learn a new language anyway.
 
+### The good ###
+
 So, in ePHL, the template language is PHP. Plain old PHP. But as I'm a very kind person (when I'm not eating
 kittens), I've written some functions to help you:
 
@@ -121,12 +123,95 @@ So you can write beautiful (and syntax-highlighted) templates like this:
 </div>
 ```
 
+### The also good ###
+
 But that's not all! Inspired by http://www.phpti.com, I've written similar template functions so you can
 add extra functions to your templates: inheritance, block replacement, easy inclusion, template overwriting.
 
 **template.php**
 ```php
+<?php
+require_once('/lib/templates.php');
+template_folder('/views');
+
+template_inherits('structure');
+
+block_start('main');
+
+switch (@$_GET['content']):
+	case 'a':
+?><p>You are on the content of page A, mister!</p><?php
+		break;
+	case 'b':
+?><p>Yep, B panel!</p><?php
+		break;
+	case 'c':
+?><p>Weird... This is the C section.</p><?php
+		break;
+	default:
+?><p>This is the default content! Click on a link above, dummy!</p><?php
+		break;
+endswitch;
+
+block_end();
+
+block_start('title'); ?>
+<h1>Template demo</h1>
+<?php block_end(); ?>
 ```
+
+And your templates:
+
+**views/structure.php**
+```php
+<!DOCTYPE html>
+<html class="no-js">
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+    </head>
+    <body>
+    	<?php block('title'); ?>
+    	
+    	<div id="menu">
+    		<?php template_include('menu'); ?>
+    	</div>
+    	
+    	<div id="main">
+    		<?php block('main'); ?>
+    	</div>
+    </body>
+</html>
+```
+
+**views/menu.php**
+```php
+<nav>
+	<a href="template.php?content=a">Content A</a>
+	<a href="template.php?content=b">Content B</a>
+	<a href="template.php?content=c">Content C</a>
+</nav>
+```
+
+Do you really need more (or less) than that? You can even write or use a lot of PHP functions to ease
+the most common tasks in templates, if any ("trim", "str_replace" and so on). And if you use the Controllers,
+you can replace blocks by function calls and inheritance.
+
+### The ugly ###
+
+Maybe you'd say to me: "And what about code injection, mor*n?!". Do you really expect me to reply to insults?
+OK. Code injections are possible when a/ the code in your database is not safe or b/ you do not properly 
+escape special chars when displaying a value to HTML.
+
+This is why I've come with these two functions, "html()" and "javascript()" and I use the shorttag "<?=VAL?>":
+it allows you to easily add clean text, but more, it **makes your errors obvious to everyone**! When you are
+reading a template, especially with syntax highlighted, you can see if there are mistakes: if you or your
+coworker has written <code><p><?=$description?></p></code>, according to the expected content of "$description"
+you'll be quickly able to tell if it's a security flaw or not. And you quickly add the "<?=html()?>" portion of
+code every time you want to display a variable.
+
+One last thing: never - ever - escape a string before passing it to the template. You could go to Hell, which is
+a very hot place, especially in summer.
 
 
 ## ORM (is for losers) ##
