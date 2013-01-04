@@ -1,33 +1,30 @@
-ePHL
-===============
+# ePHL #
 
 A minimalist PHP framework.
 
 
-Concepts
-----------------
+## Concepts ##
 
-ePHL was born from my experience of EVERY SINGLE PHP FRAMEWORK that I tried. When I start a project, I
+ePHL was born from my experience of **EVERY SINGLE PHP FRAMEWORK** that I ever tried. When I start a project, I
 want to code the minimum but keep a total control of what I do because every new project has - by definition -
 never been done.
 
 So the point of this framework is to provide a really simple base so that you do get useful shortcuts and functions
-but are not forced to do some extra work not required, especially if you are multi-task (developer & designer).
+but are not forced to do some extra work not required, especially if you are multi-task (developer and designer).
 
-ePHL is pronounced like Eiffel (/ɛ.fɛl/), and could mean **e**nisseo's **PH**P **L**ibrary.
+ePHL is pronounced like *Eiffel* (/ɛ.fɛl/), and could mean **e**nisseo's **PH**P **L**ibrary.
 
 
-MVC (is bullsh*t)
-----------------
+## MVC (is bullsh*t) ##
 
 Firstly, I want to come clear. By reading this title, you could think I have hard feelings about the 
 MVC (Mad Vulcan Cyborg) model: you would be right. But what I hate mostly, like every design pattern, is
 the overuse in contexts that are often non pertinents.
 
-In ePHL, YOU decide if you want to separate the M from the V, from the C, or even use any of this, or add
+In ePHL, *you* decide if you want to separate the M from the V, from the C, or even use any of this, or add
 some new letters to your model.
 
-ePHL provides a freedom of choice in your implementation. Here is a "Hello, world!" in ephl:
+ePHL provides a freedom of choice in your implementation. Here is the classic "Hello, world!" in ePHL:
 
 **hello1.php**
 ```php
@@ -42,32 +39,36 @@ Now your are a bit frustrated that I didn't give you a big fat example. Ok, then
 **hello2.php**
 ```php
 <?php
-include('initialize-my-app.php');
+require_once('/lib/controllers.php');
 
-HelloWorldController extends DefaultController
+class HelloWorldController extends Controller
 {
 	public function render()
 	{
 		print('Hello, world!');
 	}
 }
+
+runLastController();
 ?>
 ```
 
-Happy? We added a Controller, why not a View?
+Happy? Now we added a Controller, why not a View?
 
 **hello3.php**
 ```php
 <?php
-include('initialize-my-app.php');
+require_once('/lib/controllers.php');
 
-HelloWorldController extends DefaultController
+class HelloWorldController extends Controller
 {
 	public function render()
 	{
 		include('views/helloworld.tpl');
 	}
 }
+
+runLastController();
 ?>
 ```
 
@@ -81,9 +82,54 @@ in charge of the PHP code as well as the HTML/CSS/Javascript code, you do not ha
 files for each new piece of code you write if you do not want to.
 
 
+## Templates (the nice way) ##
 
-ORM (is for losers)
-----------------
+After reading the previous sections, you still don't know what I think of template engines? They are made
+by Satan (aka CTO) and the Four Horsemen of the Apocalypse (aka developers) and their only goal is to
+piss off every existing guy, from the developer - who'd like to write some good ol' PHP code, not learn
+a new language - to the designer - who'd need the developer for every 20% task the engine is not able to
+manage and who have to learn a new language anyway.
+
+So, in ePHL, the template language is PHP. Plain old PHP. But as I'm a very kind person (when I'm not eating
+kittens), I've written some functions to help you:
+
+```php
+html($text); // returns the HTML-safe text
+javascript($text); // returns a plain Javascript string
+```
+
+So you can write beautiful (and syntax-highlighted) templates like this:
+
+**html.php**
+```php
+<div>
+	<?php if ($eggsCount > 1): ?>
+	<p>There are <?=html($eggsCount)?> eggs in my basket.</p>
+	<?php elseif ($eggsCount > 0): ?>
+	<p>There is only one egg in my basket.</p>
+	<?php else: ?>
+	<p>Holy chicken! There is no egg in my basket!</p>
+	<?php endif; ?>
+	
+	<?php if (count($movies)): ?>
+	<ul>
+		<?php foreach ($movies as $movie): ?>
+		<li><?=html(<?=html($movie['title'])?>)?> (<?=html($movie['year'])?>)</li>
+		<?php endforeach; ?>
+	</ul>
+	<?php endif; ?>
+</div>
+```
+
+But that's not all! Inspired by http://www.phpti.com, I've written similar template functions so you can
+add extra functions to your templates: inheritance, block replacement, easy inclusion, template overwriting.
+
+**template.php**
+```php
+```
+
+
+## ORM (is for losers) ##
 
 The SQL language is already an abstraction, d*ckhead! If you add another layer, it will only make the 20%
 non common tasks 80% harder.
@@ -119,8 +165,7 @@ And so on...
 Did you like it? Didn't it feel obvious and natural? The more you'll use it, the more you'll like it!
 
 
-Form generation (not for the lazy-a**)
-----------------
+## Form generation (not for the lazy-a**) ##
 
 ePHL does provide form generation, but it has two layers: an abstract layer, with only abstract classes definitions,
 and an implementation with ePHL own generated HTML. Like it or implement your own rendering, but the abstraction
@@ -132,8 +177,7 @@ is only here to provide a classic flow for processing forms:
 ```
 
 
-URL mapping (if you do it yourself)
-----------------
+## URL mapping (if you do it yourself) ##
 
 I personnally prefer having the file "a/b/c.php" behind of the URL "a/b/c", and not loaded by a series
 of PHP scripts that I do not understand. Anyway, ePHL lets you do what you want, so if you love URL 
@@ -158,18 +202,15 @@ By the way, do you like the "switch(true)" syntax? Better to read than a 30 line
 
 
 
-Useful functions (I wrote them for you)
-----------------
+## Useful functions (I wrote them for you) ##
 
 
 
-Translations (mon ami)
-----------------
+## Translations (mon ami) ##
 
 
 
-Security
-----------------
+## Security ##
 
 ePHL can't and won't prevent the major security issue: you, the not-that-awesome developer. But it can
 help you with some tools and tips.
@@ -180,8 +221,7 @@ help you with some tools and tips.
 
 
 
-Use with other frameworks
-----------------
+## Use with other frameworks ##
 
 What?! Did you even read what I'd just explained to you?! Well, there are certainly two cases when you
 have this issue:
@@ -212,8 +252,7 @@ may want to share it so we can all enjoy the library of re-write one in the ephl
 only if needed...).
 
 
-Contact & development
-----------------
+## Contact & development ##
 
 ePHL is still in development (and will always be in constant evolution due to the evil nature of the web).
 If you want to add some features, well, discuss it with me first so we can see if it has a chance to be

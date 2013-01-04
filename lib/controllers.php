@@ -4,6 +4,7 @@
  * 
  * @author Enisseo
  */
+require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'functions.php');
 
 /**
  * A class for each controller/page of your application.

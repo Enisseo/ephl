@@ -1,5 +1,5 @@
 <?php
-require_once(dirname(dirname(dirname(__FILE__))) . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'htmlforms.php');
+require_once(dirname(dirname(dirname(__FILE__))) . '/lib/htmlforms.php');
 
 $form = new DefaultForm(array('action' => url('')));
 $form->addComponents(array(
