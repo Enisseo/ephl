@@ -1,11 +1,11 @@
 ePHL
-====
+===============
 
 A minimalist PHP framework.
 
 
 Concepts
-===
+----------------
 
 ePHL was born from my experience of EVERY SINGLE PHP FRAMEWORK that I tried. When I start a project, I
 want to code the minimum but keep a total control of what I do because every new project has - by definition -
@@ -14,10 +14,11 @@ never been done.
 So the point of this framework is to provide a really simple base so that you do get useful shortcuts and functions
 but are not forced to do some extra work not required, especially if you are multi-task (developer & designer).
 
+ePHL is pronounced like Eiffel (/ɛ.fɛl/), and could mean **e**nisseo's **PH**P **L**ibrary.
 
 
 MVC (is bullsh*t)
-===
+----------------
 
 Firstly, I want to come clear. By reading this title, you could think I have hard feelings about the 
 MVC (Mad Vulcan Cyborg) model: you would be right. But what I hate mostly, like every design pattern, is
@@ -82,7 +83,7 @@ files for each new piece of code you write if you do not want to.
 
 
 ORM (is for losers)
-===
+----------------
 
 The SQL language is already an abstraction, d*ckhead! If you add another layer, it will only make the 20%
 non common tasks 80% harder.
@@ -119,7 +120,7 @@ Did you like it? Didn't it feel obvious and natural? The more you'll use it, the
 
 
 Form generation (not for the lazy-a**)
-===
+----------------
 
 ePHL does provide form generation, but it has two layers: an abstract layer, with only abstract classes definitions,
 and an implementation with ePHL own generated HTML. Like it or implement your own rendering, but the abstraction
@@ -132,7 +133,7 @@ is only here to provide a classic flow for processing forms:
 
 
 URL mapping (if you do it yourself)
-===
+----------------
 
 I personnally prefer having the file "a/b/c.php" behind of the URL "a/b/c", and not loaded by a series
 of PHP scripts that I do not understand. Anyway, ePHL lets you do what you want, so if you love URL 
@@ -158,17 +159,17 @@ By the way, do you like the "switch(true)" syntax? Better to read than a 30 line
 
 
 Useful functions (I wrote them for you)
-===
+----------------
 
 
 
 Translations (mon ami)
-===
+----------------
 
 
 
 Security
-===
+----------------
 
 ePHL can't and won't prevent the major security issue: you, the not-that-awesome developer. But it can
 help you with some tools and tips.
@@ -180,13 +181,12 @@ help you with some tools and tips.
 
 
 Use with other frameworks
-===
+----------------
 
 What?! Did you even read what I'd just explained to you?! Well, there are certainly two cases when you
 have this issue:
 
-You want a stable (as in smelly and obese) framework but you like some ephl features
-==
+### You want a stable (as in smelly and obese) framework but you like some ephl features ###
 
 First: the main thing about ePHL is the simplicity and small amount of code and included files. If you use a
 monster framework you will annihilate any advantages ePHL has.
@@ -198,8 +198,7 @@ the source code.
 
 I know, it's hard and dirty but you started it.
 
-You want some feature(s) another big framework has and ePHL has not
-==
+### You want some feature(s) another big framework has and ePHL has not ###
 
 Nice! You start to like the ePHL framework, yound padawan. However, your mind is filled with envy, your 
 soul is corrupted by desire and laziness has invaded your spirit: someone coded something (let me guess, 
@@ -214,7 +213,7 @@ only if needed...).
 
 
 Contact & development
-===
+----------------
 
 ePHL is still in development (and will always be in constant evolution due to the evil nature of the web).
 If you want to add some features, well, discuss it with me first so we can see if it has a chance to be

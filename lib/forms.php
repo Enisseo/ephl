@@ -30,12 +30,16 @@ abstract class Form
 	public function addComponent(FormComponent $component)
 	{
 		$this->components[] = $component;
+		$component->setForm($this);
 		return $this;
 	}
 
 	public function addComponents($components)
 	{
-		$this->components = array_merge($this->components, $components);
+		foreach ($components as $component)
+		{
+			$this->addComponent($component);
+		}
 		return $this;
 	}
 
@@ -67,6 +71,18 @@ abstract class Form
 		}
 		return false;
 	}
+	
+	public function isTriggeredWithRequest()
+	{
+		if (strtolower($this->method) == 'post')
+		{
+			return $this->isTriggered($_POST);
+		}
+		else
+		{
+			return $this->isTriggered($_GET);
+		}
+	}
 
 	/**
 	 * Populates the fields/components with the given data.
@@ -77,19 +93,33 @@ abstract class Form
 	{
 		foreach ($this->components as $component)
 		{
-			$field->populate($data);
+			$component->populate($data);
+		}
+	}
+	
+	public function populateWithRequest()
+	{
+		if (strtolower($this->method) == 'post')
+		{
+			$this->populate($_POST);
+		}
+		else
+		{
+			$this->populate($_GET);
 		}
 	}
 
 	/**
 	 * Validates a form with its fields.
+	 * 
+	 * @param array $data the array to populate with validated data.
 	 */
-	public function validate()
+	public function validate(&$data)
 	{
 		$validate = true;
 		foreach ($this->components as $component)
 		{
-			$validate &= $component->validate();
+			$validate &= $component->validate($data);
 		}
 		return $validate;
 	}
@@ -133,13 +163,14 @@ abstract class FormComponent
 	 * 
 	 * @return boolean
 	 */
-	abstract public function validate();
+	abstract public function validate(&$data);
 	
 	/**
 	 * Renders the component.
 	 */
 	abstract public function render();
 }
+
 
 /**
  * A field within a form.
@@ -154,8 +185,9 @@ abstract class FormField extends FormComponent
 		$this->value = $data[$this->name];
 	}
 
-	public function validate()
+	public function validate(&$data)
 	{
+		$data[$this->name] = $this->value;
 		return true;
 	}
 	
@@ -170,12 +202,59 @@ abstract class FormField extends FormComponent
 	}
 }
 
+abstract class FormGroup extends FormComponent
+{
+	protected $components = array();
+	
+	public function addComponent(FormComponent $component)
+	{
+		$this->components[] = $component;
+		$component->setForm($this);
+		return $this;
+	}
+
+	public function addComponents($components)
+	{
+		foreach ($components as $components)
+		{
+			$this->addComponent($component);
+		}
+		return $this;
+	}
+
+	public function populate(&$data)
+	{
+		foreach ($this->components as $component)
+		{
+			$component->populate($data);
+		}
+	}
+
+	public function validate(&$data)
+	{
+		$validated = true;
+		foreach ($this->components as $component)
+		{
+			$validated &= $component->validate($data);
+		}
+		return $validated;
+	}
+}
+
 /**
  * An action the user can execute on the form (submit button, cancel...).
  */
-abstract class FormAction extends FormComponent
+abstract class FormAction
 {
 	protected $name = null;
+	
+	public function __construct($params = array())
+	{
+		foreach ($params as $key => $value)
+		{
+			$this->$key = $value;
+		}
+	}
 	
 	/**
 	 * Indicates if the action has been triggered.

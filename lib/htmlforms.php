@@ -5,115 +5,29 @@ require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'forms.php');
 
 class DefaultForm extends Form
 {
-	public $structure = null;
-
-	public function __construct($data = array())
-	{
-		foreach ($data as $key => $value)
-		{
-			$this->$key = $value;
-		}
-	}
-	
-	public function populateWithRequest($request)
-	{
-		return $this->populate($request[$this->method]);
-	}
-	
-	public function isTriggered($request)
-	{
-		foreach (array_keys($this->actions) as $actionName)
-		{
-			if (isset($request[$this->method][$actionName]))
-			{
-				return $actionName;
-			}
-		}
-		return false;
-	}
-
-
-	public function addComponent($component)
-	{
-		$this->structure[] = $component;
-		return $this;
-	}
-
-	public function getStructure()
-	{
-		return (is_null($this->structure)? $this->fields: $this->structure);
-	}
-	
-	public function renderFields()
-	{
-		$fields = func_get_args();
-		if (func_num_args() == 1 && is_array(func_get_arg(0)))
-		{
-			$fields = func_get_arg(0);
-		}
-		foreach ($this->fields as $field)
-		{
-			if (empty($fields) || in_array($field->name, $fields))
-			{
-				$field->render();
-			}
-		}
-	}
-	
-	public function renderActions()
-	{
-		if (!empty($this->actions)): ?>
-	<ul class="actions">
-		<?php foreach ($this->actions as $actionName => $action):
-			$cssClass = isset($action->cssClass)? $action->cssClass: preg_replace('/[^a-zA-Z]/', '', preg_replace('/([^a-zA-Z]|^)([a-zA-Z])/e', '\'$1\'.strtoupper(\'$2\')', $action->name)); ?>
-		<li class="<?=html($cssClass)?>"><?php $action->render(); ?></li>
-		<?php endforeach; ?>
-	</ul>
-	<?php endif;
-	}
-
 	public function render()
 	{
 		?>
 <form method="<?=html($this->method)?>" action="<?=html($this->action)?>">
-	<?php foreach ($this->getStructure() as $component):
-		$component->form = $this; ?>
+	<?php foreach ($this->components as $component): ?>
 	<?php $component->render(); ?>
 	<?php endforeach; ?>
-	<?php $this->renderActions(); ?>
+	<?php if (!empty($this->actions)): ?>
+	<ul class="actions">
+		<?php foreach ($this->actions as $action):
+			$cssClass = isset($action->cssClass)? $action->cssClass: preg_replace('/[^a-zA-Z]/', '', preg_replace('/([^a-zA-Z]|^)([a-zA-Z])/e', '\'$1\'.strtoupper(\'$2\')', $action->getName())); ?>
+		<li class="<?=html($cssClass)?>"><?php $action->render(); ?></li>
+		<?php endforeach; ?>
+	</ul>
+	<?php endif; ?>
 </form>
 		<?php
 	}
 }
 
-class FormFieldset extends FormComponent
+class FormFieldset extends FormGroup
 {
 	public $label = null;
-	public $fields = array();
-
-	public function __construct($label = '', $fields = array())
-	{
-		$this->label = $label;
-		$this->fields = $fields;
-	}
-
-	public function getFields()
-	{
-		$fields = array();
-		foreach ($this->fields as $field)
-		{
-			if ($field instanceof FormField)
-			{
-				$fields[$field->name] = $field;
-			}
-			else
-			{
-				$field = $this->form->fields[$field];
-				$fields[$field->name] = $field;
-			}
-		}
-		return $fields;
-	}
 
 	public function render()
 	{
@@ -121,8 +35,8 @@ class FormFieldset extends FormComponent
 <fieldset>
 	<legend><?=html($this->label)?></legend>
 
-	<?php foreach ($this->getFields() as $field): ?>
-	<?php $field->render(); ?>
+	<?php foreach ($this->components as $component): ?>
+	<?php $component->render(); ?>
 	<?php endforeach; ?>
 </fieldset>
 		<?php
@@ -131,16 +45,8 @@ class FormFieldset extends FormComponent
 
 class DefaultFormAction extends FormAction
 {
-	public $label = null;
-	public $cssClass = null;
-
-	public function __construct($name, $label = null, $cssClass = null)
-	{
-		$this->name = $name;
-		$this->label = $label;
-		$this->cssClass = $cssClass;
-	}
-
+	protected $label = null;
+	
 	public function getLabel()
 	{
 		return is_null($this->label)? $this->name: $this->label;
@@ -183,14 +89,6 @@ abstract class DefaultFormField extends FormField
 	public $cssClass = null;
 	public $tabindex = null;
 
-	public function __construct($data = array())
-	{
-		foreach ($data as $key => $value)
-		{
-			$this->$key = $value;
-		}
-	}
-
 	public function getCssClass()
 	{
 		return !is_null($this->cssClass)? $this->cssClass:
@@ -222,9 +120,11 @@ abstract class DefaultFormField extends FormField
 		return $this->id;
 	}
 
-	public function validate()
+	public function validate(&$data)
 	{
-		if ($this->required && empty($this->value))
+		$valid = parent::validate($data);
+		
+		if ($valid && $this->required && empty($this->value))
 		{
 			$this->error = DefaultFormField::$errors['required'];
 		}
@@ -247,9 +147,7 @@ abstract class DefaultFormField extends FormField
 		<?php
 	}
 
-	public function renderInput()
-	{
-	}
+	public function renderInput() {}
 }
 
 class FormFieldText extends DefaultFormField
@@ -269,9 +167,9 @@ class FormFieldText extends DefaultFormField
 
 class FormFieldEmail extends DefaultFormField
 {
-	public function validate()
+	public function validate(&$data)
 	{
-		$valid = parent::validate();
+		$valid = parent::validate($data);
 		
 		if ($valid && (!preg_match('/^[^@]+\@[^\.]+(\.[^\.]+)+$/', $this->value)))
 		{
@@ -295,9 +193,9 @@ class FormFieldDate extends DefaultFormField
 {
 	public $format = 'mm/dd/yy';
 
-	public function validate()
+	public function validate(&$data)
 	{
-		$valid = parent::validate();
+		$valid = parent::validate($data);
 		
 		if ($valid && (!preg_match('/\d{4}\-\d{2}\-\d{2}/', $this->value)))
 		{
@@ -319,9 +217,9 @@ class FormFieldDate extends DefaultFormField
 
 class FormFieldTime extends DefaultFormField
 {
-	public function validate()
+	public function validate(&$data)
 	{
-		$valid = parent::validate();
+		$valid = parent::validate($data);
 		
 		if ($valid && (!preg_match('/[0?\d]\:[0?\d]/', $this->value)))
 		{
@@ -343,9 +241,9 @@ class FormFieldTime extends DefaultFormField
 
 class FormFieldNumeric extends DefaultFormField
 {
-	public function validate()
+	public function validate(&$data)
 	{
-		$valid = parent::validate();
+		$valid = parent::validate($data);
 		
 		if ($valid && (!is_numeric($this->value)))
 		{
@@ -371,11 +269,11 @@ class FormFieldCheckbox extends DefaultFormField
 	public $checked = false;
 	protected $defaultValue = null;
 	
-	public function populate($value)
+	public function populate(&$data)
 	{
-		$this->checked = ($this->value == $value);
+		$this->checked = ($this->value == $data[$this->name]);
 		$this->defaultValue = $this->value;
-		return parent::populate($value);
+		return parent::populate($data);
 	}
 
 	public function render()
