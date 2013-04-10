@@ -34,7 +34,7 @@ ePHL provides a freedom of choice in your implementation. Here is the classic "H
 What did you expect you damn Zend Framework lover?! Some 100-lines code example you don't even understand?!
 You want to write a f*cking "Hello, world!", *it should be as simple as that!*
 
-Now your are a bit frustrated that I didn't give you a big fat example. Ok, then you could also write:
+Now you are a bit frustrated that I didn't give you a big fat example. Ok, then you could also write:
 
 **hello2.php**
 ```php
@@ -86,9 +86,9 @@ files for each new piece of code you write if you do not want to.
 
 After reading the previous sections, you still don't know what I think of template engines? They are made
 by Satan (aka CTO) and the Four Horsemen of the Apocalypse (aka developers) and their only goal is to
-piss off every existing guy, from the developer - who'd like to write some good ol' PHP code, not learn
-a new language - to the designer - who'd need the developer for every 20% task the engine is not able to
-manage and who have to learn a new language anyway.
+piss off every existing guy, from the developer - who would like to write some good ol' PHP code, not learn
+a new language - to the designer - who would need the developer for every 20% task the engine is not able to
+manage and who would have to learn a new language anyway.
 
 ### The good ###
 
@@ -206,7 +206,7 @@ escape special chars when displaying a value to HTML.
 This is why I've come with these two functions, "html()" and "javascript()" and I use the shorttag "<?=VAL?>":
 it allows you to easily add clean text, but more, it **makes your errors obvious to everyone**! When you are
 reading a template, especially with syntax highlighted, you can see if there are mistakes: if you or your
-coworker has written <code><p><?=$description?></p></code>, according to the expected content of "$description"
+coworker has written "<p><?=$description?></p>", according to the expected content of "$description"
 you'll be quickly able to tell if it's a security flaw or not. And you quickly add the "<?=html()?>" portion of
 code every time you want to display a variable.
 
@@ -228,6 +228,8 @@ A little portion of code will help you understand:
 **my-mysql-sql.php**
 ```php
 <?php
+require_once('/lib/mysql.php');
+
 $mysql = new MySQL('host', 'user', 'pass', 'db');
 
 $mysql->select()->from('mytable')->fetchArray(); // gets you all values from table "mytable" to an array...
@@ -241,8 +243,24 @@ $mysql
 	->limit(10)
 	->fetchBy('field_a'); // do I really need to explain?
 	
-$mysql->update('mytable')->set(array('field_a' => $valueA, 'field_b' => $valueB))->execute();
-?>
+$mysql
+	->update('mytable')
+	->set(array(
+		'field_a' => $valueA,
+		'field_b' => $valueB,
+		))
+	->execute();
+
+$mysql
+	->insert()
+	->into('mytable')
+	->set(array(
+		'field_a' => $valueA,
+		'field_b' => $valueB,
+		))
+	->executeAndGetInsertedId();
+
+$mysql->query('SHOW COLUMNS FROM mytable')->execute(); // gets you a resource id so you can use mysql_fetch_assoc and similar functions
 ```
 
 And so on...
@@ -325,7 +343,7 @@ I know, it's hard and dirty but you started it.
 
 ### You want some feature(s) another big framework has and ePHL has not ###
 
-Nice! You start to like the ePHL framework, yound padawan. However, your mind is filled with envy, your 
+Nice! You start to like the ePHL framework, young padawan. However, your mind is filled with envy, your 
 soul is corrupted by desire and laziness has invaded your spirit: someone coded something (let me guess, 
 Zend Framework?) and you'd like to get it for free.
 

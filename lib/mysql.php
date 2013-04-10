@@ -60,7 +60,7 @@ class Mysql
 		if (func_num_args() > 0)
 		{
 			$args = func_get_args();
-			$query->fields($args);
+			$query->fields((count($args) == 1 && is_array($args[0]))? $args[0]: $args);
 		}
 		return $query;
 	}
@@ -272,18 +272,18 @@ class MysqlSelect extends MysqlQuery
 	protected $offset = 0;
 	protected $orders = array();
 	protected $group = null;
-	protected $having = null;
 
 	/**
 	 * @return MysqlSelect
 	 */
 	public function fields()
 	{
-		switch (func_num_args())
+		$args = func_get_args();
+		switch (count($args))
 		{
 			case 0: $this->fields = null; break;
-			case 1: $this->fields = is_array(func_get_arg(0))? func_get_arg(0): array(func_get_arg(0)); break;
-			default: $this->fields = func_get_args(); break;
+			case 1: $this->fields = is_array($args[0])? $args[0]: array($args[0]); break;
+			default: $this->fields = $args; break;
 		}
 		return $this;
 	}
@@ -340,7 +340,7 @@ class MysqlSelect extends MysqlQuery
 	public function where()
 	{
 		$args = func_get_args();
-		$this->where = array_merge($this->where, $args);
+		$this->where = array_merge($this->where, (count($args) == 1 && is_array($args[0]))? $args[0]: $args);
 		return $this;
 	}
 
@@ -372,8 +372,7 @@ class MysqlSelect extends MysqlQuery
 	 */
 	public function groupBy($field, $having = '')
 	{
-		$this->group = $field;
-		$this->having = $having;
+		$this->group = is_array($field)? $field: array($field => $having);
 		return $this;
 	}
 
@@ -435,13 +434,12 @@ class MysqlSelect extends MysqlQuery
 				$type, $this->escapeTable($table), join(' AND ', $joinOn));
 		}
 		
-		$groups = '';
+		$groups = array();
 		if (!empty($this->group))
 		{
-			$groups = $this->escapeField($this->group);
-			if (!empty($this->having))
+			foreach ($this->group as $group => $having)
 			{
-				$groups .= 'HAVING ' . $this->having;
+				$groups[] = $this->escapeField($group) . (empty($having)? '': (' HAVING ' . $having));
 			}
 		}
 		
@@ -475,8 +473,9 @@ class MysqlSelect extends MysqlQuery
 			$this->escapeTable($this->from),
 			join(' ', $joins),
 			join(' AND ', $where),
-			$groups,
+			join(', ', $groups),
 			join(', ', $orders));
+		
 		return parent::execute();
 	}
 
