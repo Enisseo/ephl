@@ -149,7 +149,7 @@ function list2str($list)
  * @param string $keyJoin the join between the key and the value.
  * @return string the array joined.
  */
-function joinKeys($array, $lineJoin = ',', $keyJoin = ':')
+function ajoin($array, $lineJoin = ',', $keyJoin = ':')
 {
 	$lines = array();
 	foreach ($array as $key => $line)
@@ -180,7 +180,7 @@ function among($value, $values)
  * @param array $keysInOrder the list of keys in order.
  * @return array the array sorted.
  */
-function sortKeysByArray($arrayWithKeys, $keysInOrder)
+function array_listsort($arrayWithKeys, $keysInOrder)
 {
 	$result = array();
 	foreach ($keysInOrder as $key)
@@ -203,7 +203,7 @@ function sortKeysByArray($arrayWithKeys, $keysInOrder)
  * @return mixed
  * @see setValueToKeyInArray()
  */
-function findKeyFromArray(&$array, $key, $default = null)
+function array_get(&$array, $key, $default = null)
 {
 	if (isset($array[$key]))
 	{
@@ -242,7 +242,7 @@ function findKeyFromArray(&$array, $key, $default = null)
  * @param mixed $value
  * @see findKeyFromArray()
  */
-function setValueToKeyInArray(&$array, $key, $value)
+function array_set(&$array, $key, $value)
 {
 	$path = preg_split('/(\]\[)|\[|(\]$)/', $key);
 	$lastKey = array_pop($path);
@@ -301,7 +301,7 @@ function array_toggle($array, $value)
  * @param float $pc the percentage of color to apply.
  * @return string the hex string of the returned color.
  */
-function colorMix($color1, $color2, $pc = 0.5)
+function colormix($color1, $color2, $pc = 0.5)
 {
 	$color = '';
 	for ($c = 0; $c < 6; $c += 2)
@@ -321,7 +321,7 @@ function colorMix($color1, $color2, $pc = 0.5)
  * @param mixed $date the date, either a timestamp or a formatted date (Y-m-d)
  * @return string
  */
-function formatDate($format, $date)
+function datef($format, $date)
 {
 	if (!is_numeric($date))
 	{
@@ -457,7 +457,7 @@ function hash2id($hash32)
  * @param string $variant the variant part to add to the URL.
  * @return string the URL with variant part if provided, the variant part of the URL otherwise.
  */
-function urlVariant($url, $variant = null)
+function namevariant($url, $variant = null)
 {
 	$lastDot = strrpos($url, '.');
 	if ($lastDot !== false)
@@ -494,7 +494,20 @@ function standardize($text)
 /**
  * Indicates if the string starts with a certain pattern.
  */
-function startsWith($str, $start)
+function startswith($str, $start)
 {
 	return strlen($str) >= strlen($start)? (substr($str, 0, strlen($start)) == $start): false;
+}
+
+/**
+ * Returns the msec since last tick.
+ */
+function tick()
+{
+	static $time = 0;
+	list($sec, $usec) = preg_split('/ /', microtime());
+	$newTime = floatval($sec) + floatval($usec);
+	$diff = $newTime - $time;
+	$time = $newTime;
+	return $diff;
 }

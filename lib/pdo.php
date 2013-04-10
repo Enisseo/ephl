@@ -1,6 +1,6 @@
 <?php
 /**
- * The easy-to-use MySQL classes.
+ * The easy-to-use PDO classes.
  *
  * @author Enisseo
  */
@@ -8,60 +8,57 @@
 require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'database.php');
  
 /**
- * The MySQL base class.
+ * The PDO base class.
  *
- * <p>This is an entry point for all MySQL operations.</p>
+ * <p>This is an entry point for all PDO operations.</p>
  */
-class Mysql implements Database
+class PdoDatabase implements Database
 {
 	protected $connection = null;
-	protected $host = null;
+	protected $dns = null;
 	protected $name = null;
 	protected $password = null;
-	protected $schema = null;
 
-	public function __construct($host = '127.0.0.1', $name = 'root', $password = '', $schema = '')
+	public function __construct($dns = 'mysql:host=127.0.0.1', $name = 'root', $password = '')
 	{
-		$this->host = $host;
+		$this->dns = $dns;
 		$this->name = $name;
 		$this->password = $password;
-		$this->schema = $schema;
 	}
 
 	public function connect()
 	{
 		if (is_null($this->connection))
 		{
-			$this->connection = mysql_connect($this->host, $this->name, $this->password);
-			mysql_select_db($this->schema, $this->connection);
+			$this->connection = new PDO($this->dns, $this->name, $this->password);
 		}
 		return $this->connection;
 	}
 
 	/**
-	 * @return MysqlQuery
+	 * @return PdoQuery
 	 */
 	public function query($query)
 	{
-		if ($query instanceof MysqlQuery)
+		if ($query instanceof PdoQuery)
 		{
-			$query->setConnection($this->connect(), $this->schema);
+			$query->setConnection($this->connect());
 			return $query;
 		}
 		
 		$connect = $this->connect();
-		$q = new MysqlQuery($connect, $this->schema);
+		$q = new PdoQuery($connect);
 		$q->is($query);
 		return $q;
 	}
 
 	/**
-	 * @return MysqlSelect
+	 * @return PdoSelect
 	 */
 	public function select()
 	{
 		$connect = $this->connect();
-		$query = new MysqlSelect($connect, $this->schema);
+		$query = new PdoSelect($connect);
 		if (func_num_args() > 0)
 		{
 			$args = func_get_args();
@@ -71,12 +68,12 @@ class Mysql implements Database
 	}
 
 	/**
-	 * @return MysqlInsert
+	 * @return PdoInsert
 	 */
 	public function insert()
 	{
 		$connect = $this->connect();
-		$query = new MysqlInsert($connect, $this->schema);
+		$query = new PdoInsert($connect);
 		if (func_num_args() == 1)
 		{
 			$query->set(func_get_arg(0));
@@ -85,21 +82,21 @@ class Mysql implements Database
 	}
 
 	/**
-	 * @return MysqlDelete
+	 * @return PdoDelete
 	 */
 	public function delete()
 	{
 		$connect = $this->connect();
-		return new MysqlDelete($connect, $this->schema);
+		return new PdoDelete($connect);
 	}
 
 	/**
-	 * @return MysqlUpdate
+	 * @return PdoUpdate
 	 */
 	public function update()
 	{
 		$connect = $this->connect();
-		$query = new MysqlUpdate($connect, $this->schema);
+		$query = new PdoUpdate($connect);
 		if (func_num_args() == 1)
 		{
 			$query->table(func_get_arg(0));
@@ -108,16 +105,16 @@ class Mysql implements Database
 	}
 	
 	/**
-	 * @return MysqlTransaction
+	 * @return PdoTransaction
 	 */
 	public function transaction()
 	{
 		$connect = $this->connect();
-		return new MysqlTransaction($connect);
+		return new PdoTransaction($connect);
 	}
 }
 
-class MysqlTransaction extends Mysql implements DatabaseTransaction
+class PdoTransaction extends PdoDatabase implements DatabaseTransaction
 {
 	public function __construct(&$connection)
 	{
@@ -126,44 +123,38 @@ class MysqlTransaction extends Mysql implements DatabaseTransaction
 	
 	public function start()
 	{
-		$this->query('SET AUTOCOMMIT = 0')->execute();
-		$this->query('START TRANSACTION')->execute();
+		$this->connection->beginTransaction();
 	}
 	
 	public function commit()
 	{
-		$this->query('COMMIT')->execute();
-		$this->query('START TRANSACTION')->execute();
+		$this->connection->commit();
 	}
 	
 	public function rollback()
 	{
-		$this->query('ROLLBACK')->execute();
-		$this->query('SET AUTOCOMMIT = 1')->execute();
+		$this->connection->rollBack();
 	}
 }
 
-class MysqlQuery implements DatabaseQuery
+class PdoQuery implements DatabaseQuery
 {
 	protected $connection = null;
-	protected $schema = null;
 	protected $query = null;
 	protected $parameters = array();
 
-	public function __construct(&$connection, $schema)
+	public function __construct(&$connection)
 	{
 		$this->connection = $connection;
-		$this->schema = $schema;
 	}
 
-	public function setConnection(&$connection, $schema)
+	public function setConnection(&$connection)
 	{
 		$this->connection = $connection;
-		$this->schema = $schema;
 	}
 
 	/**
-	 * @return MysqlQuery
+	 * @return PdoQuery
 	 */
 	public function is($query)
 	{
@@ -172,7 +163,7 @@ class MysqlQuery implements DatabaseQuery
 	}
 
 	/**
-	 * @return MysqlQuery
+	 * @return PdoQuery
 	 */
 	public function with($param, $value = null)
 	{
@@ -184,90 +175,22 @@ class MysqlQuery implements DatabaseQuery
 		return $this;
 	}
 
-	protected function escape($value)
-	{
-		switch (true)
-		{
-			case is_null($value): return 'NULL';
-			case is_array($value):
-				foreach ($value as &$v)
-				{
-					$v = $this->escape($v);
-				}
-				return '(' . join(', ', $value) . ')';
-			//case is_numeric($value): return $value; //Problem with int stored in VARCHAR
-			case is_bool($value): return $value? '1': '0';
-			case is_int($value): return $value;
-			case is_float($value): return $value;
-			case is_string($value):
-			default: return '\''.mysql_real_escape_string($value, $this->connection).'\'';
-		}
-	}
-	
-	protected function escapeField($field)
-	{
-		if (strpos('`', $field) !== false) return $field;
-		$fieldEscaped = '';
-		$parts = preg_split('/\s+AS\s+/', trim($field), 2);
-		if (preg_match('/^[a-zA-Z0-9_\-]+(\.[a-zA-Z0-9_\-]+)?$/', $parts[0]))
-		{
-			$fParts = preg_split('/\./', $parts[0], 2);
-			if (count($fParts) == 1)
-			{
-				$fieldEscaped .= '`' . $fParts[0] . '`';
-			}
-			else
-			{
-				$fieldEscaped .= '`' . $fParts[0] . '`.';
-				if ($fParts[1] != '*')
-				{
-					$fieldEscaped .= '`' . $fParts[1] . '`';
-				}
-				else
-				{
-					$fieldEscaped .= $fParts[1];
-				}
-			}
-		}
-		else
-		{
-			$fieldEscaped .= $parts[0];
-		}
-		if (count($parts) == 2)
-		{
-			$fieldEscaped .= ' AS `' . $parts[1] . '`';
-		}
-		return $fieldEscaped;
-	}
-	
-	protected function escapeTable($table)
-	{
-		if (strpos('`', $table) !== false) return $field;
-		$parts = preg_split('/\s+(AS\s+)?/', trim($table), 2);
-		if (count($parts) == 2)
-		{
-			return '`' . $parts[0] . '` `' . $parts[1] . '`';
-		}
-		return '`' .$parts[0] . '`';
-	}
-
 	public function execute()
 	{
-		$sql = $this->query;
+		$statement = $this->connection->prepare($this->query);
 		foreach ($this->parameters as $param => $value)
 		{
-			$sql = str_replace($param, $this->escape($value), $sql);
+			$statement->bindValue($param, $value);
 		}
-		$result = mysql_query($sql, $this->connection);
-		if ($error = mysql_error($this->connection))
+		if (!$statement->execute())
 		{
-			trigger_error($error . ' (' . $this->query . ')', E_USER_WARNING);
+			trigger_error(join(', ', $statement->errorInfo()) . ' (' . $this->query . ')', E_USER_WARNING);
 		}
-		return $result;
+		return $statement;
 	}
 }
 
-class MysqlSelect extends MysqlQuery implements DatabaseSelect
+class PdoSelect extends PdoQuery implements DatabaseSelect
 {
 	protected $fields = null;
 	protected $from = null;
@@ -279,7 +202,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 	protected $group = null;
 
 	/**
-	 * @return MysqlSelect
+	 * @return PdoSelect
 	 */
 	public function fields()
 	{
@@ -294,7 +217,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 	}
 	
 	/**
-	 * @return MysqlSelect
+	 * @return PdoSelect
 	 */
 	public function addFields()
 	{
@@ -304,7 +227,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 	}
 
 	/**
-	 * @return MysqlSelect
+	 * @return PdoSelect
 	 */
 	public function from($table)
 	{
@@ -313,7 +236,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 	}
 
 	/**
-	 * @return MysqlSelect
+	 * @return PdoSelect
 	 */
 	public function leftJoin($table, $where = null)
 	{
@@ -322,7 +245,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 	}
 
 	/**
-	 * @return MysqlSelect
+	 * @return PdoSelect
 	 */
 	public function innerJoin($table, $where = null)
 	{
@@ -331,7 +254,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 	}
 
 	/**
-	 * @return MysqlSelect
+	 * @return PdoSelect
 	 */
 	public function rightJoin($table, $where = null)
 	{
@@ -340,7 +263,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 	}
 
 	/**
-	 * @return MysqlSelect
+	 * @return PdoSelect
 	 */
 	public function where()
 	{
@@ -350,21 +273,21 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 	}
 
 	/**
-	 * @return MysqlSelect
+	 * @return PdoSelect
 	 */
 	public function whereEquals($fieldsValues)
 	{
 		foreach ($fieldsValues as $field => $value)
 		{
 			$fieldUniqId = ':' . $field . substr(md5(uniqid()), 0, 8);
-			$this->where[] = $this->escapeField($field) . ' = ' . $fieldUniqId;
+			$this->where[] = $field . ' = ' . $fieldUniqId;
 			$this->with($fieldUniqId, $value);
 		}
 		return $this;
 	}
 
 	/**
-	 * @return MysqlSelect
+	 * @return PdoSelect
 	 */
 	public function orderBy($field, $order = 'ASC')
 	{
@@ -373,7 +296,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 	}
 
 	/**
-	 * @return MysqlSelect
+	 * @return PdoSelect
 	 */
 	public function groupBy($field, $having = '')
 	{
@@ -382,7 +305,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 	}
 
 	/**
-	 * @return MysqlSelect
+	 * @return PdoSelect
 	 */
 	public function having($having)
 	{
@@ -391,7 +314,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 	}
 	
 	/**
-	 * @return MysqlSelect
+	 * @return PdoSelect
 	 */
 	public function limit($limit, $offset = 0)
 	{
@@ -405,12 +328,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 		$fields = '*';
 		if (!empty($this->fields))
 		{
-			$fields = array();
-			foreach ($this->fields as $field)
-			{
-				$fields[] = $this->escapeField($field);
-			}
-			$fields = join(', ', $fields);
+			$fields = join(', ', $this->fields);
 		}
 		
 		$joins = array();
@@ -436,7 +354,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 				}
 			}
 			$joins[] = sprintf('%s %s' . (!empty($joinOn)? ' ON %s': '%s'),
-				$type, $this->escapeTable($table), join(' AND ', $joinOn));
+				$type, $table, join(' AND ', $joinOn));
 		}
 		
 		$groups = array();
@@ -444,7 +362,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 		{
 			foreach ($this->group as $group => $having)
 			{
-				$groups[] = $this->escapeField($group) . (empty($having)? '': (' HAVING ' . $having));
+				$groups[] = $group . (empty($having)? '': (' HAVING ' . $having));
 			}
 		}
 		
@@ -455,7 +373,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 			{
 				if ($order == 'ASC' || $order == 'DESC')
 				{
-					$orders[] = $this->escapeField($field) . ' ' . $order;
+					$orders[] = $field . ' ' . $order;
 				}
 			}
 		}
@@ -475,7 +393,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 			(!empty($groups)? ' GROUP BY %s': '%s') .
 			(!empty($orders)? ' ORDER BY %s': '%s') .
 			(!empty($this->limit) || !empty($this->offset)? ' LIMIT ' . $this->offset . ', ' . $this->limit: ''),
-			$this->escapeTable($this->from),
+			$this->from,
 			join(' ', $joins),
 			join(' AND ', $where),
 			join(', ', $groups),
@@ -506,11 +424,8 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 		$this->limit = intval($max);
 		$this->offset = intval($from);
 		$res = $this->execute();
-		$result = array();
-		while ($arr = mysql_fetch_assoc($res))
-		{
-			$result[] = $arr;
-		}
+		$result = $res->fetchAll(PDO::FETCH_ASSOC);
+		$res->closeCursor();
 		return $result;
 	}
 
@@ -523,11 +438,8 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 		$this->limit = intval($max);
 		$this->offset = intval($from);
 		$res = $this->execute();
-		$result = array();
-		while ($arr = mysql_fetch_assoc($res))
-		{
-			$result[] = array_values($arr);
-		}
+		$result = $res->fetchAll(PDO::FETCH_NUM);
+		$res->closeCursor();
 		return $result;
 	}
 
@@ -541,10 +453,11 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 		$this->offset = intval($from);
 		$res = $this->execute();
 		$result = array();
-		while ($arr = mysql_fetch_assoc($res))
+		while ($arr = $res->fetch(PDO::FETCH_ASSOC))
 		{
 			$result[$arr[$keyField]] = $arr;
 		}
+		$res->closeCursor();
 		return $result;
 	}
 	
@@ -569,10 +482,11 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 		$result = array();
 		$niceKeyField = str_replace('`', '', preg_replace('/^(.*\s+AS\s+)/i', '', $this->fields[0]));
 		$niceValueField = str_replace('`', '', preg_replace('/^(.*\s+AS\s+)/i', '', $this->fields[1]));
-		while ($arr = mysql_fetch_assoc($res))
+		while ($arr = $res->fetch(PDO::FETCH_ASSOC))
 		{
 			$result[$arr[$niceKeyField]] = $arr[$niceValueField];
 		}
+		$res->closeCursor();
 		return $result;
 	}
 
@@ -586,10 +500,11 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 		$this->offset = intval($from);
 		$res = $this->execute();
 		$result = array();
-		while ($arr = mysql_fetch_assoc($res))
+		while ($arr = $res->fetch(PDO::FETCH_ASSOC))
 		{
 			$result[] = $arr[$field];
 		}
+		$res->closeCursor();
 		return $result;
 	}
 
@@ -603,7 +518,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 		$this->offset = intval($from);
 		$res = $this->execute();
 		$result = array();
-		while ($arr = mysql_fetch_assoc($res))
+		while ($arr = $res->fetch(PDO::FETCH_ASSOC))
 		{
 			if (!isset($result[$arr[$keyField]]))
 			{
@@ -611,6 +526,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 			}
 			$result[$arr[$keyField]][] = $arr;
 		}
+		$res->closeCursor();
 		return $result;
 	}
 
@@ -628,13 +544,13 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 	}
 }
 
-class MysqlInsert extends MysqlQuery implements DatabaseInsert
+class PdoInsert extends PdoQuery implements DatabaseInsert
 {
 	protected $table = null;
 	protected $set = array();
 
 	/**
-	 * @return MysqlInsert
+	 * @return PdoInsert
 	 */
 	public function into($table)
 	{
@@ -643,7 +559,7 @@ class MysqlInsert extends MysqlQuery implements DatabaseInsert
 	}
 
 	/**
-	 * @return MysqlInsert
+	 * @return PdoInsert
 	 */
 	public function set($data)
 	{
@@ -655,10 +571,12 @@ class MysqlInsert extends MysqlQuery implements DatabaseInsert
 	{
 		$columns = array();
 		$values = array();
-		foreach ($this->set as $key => $value)
+		foreach ($this->set as $field => $value)
 		{
-			$columns[] = $this->escapeField($key);
-			$values[] = sprintf('%s', $this->escape($value));
+			$fieldUniqId = ':' . $field . substr(md5(uniqid()), 0, 8);
+			$columns[] = $field;
+			$values[] = $fieldUniqId;
+			$this->parameters[$fieldUniqId] = $value;
 		}
 		$this->query = sprintf('INSERT INTO %s (' .
 			join(', ', $columns) . ') VALUES (' .
@@ -674,18 +592,18 @@ class MysqlInsert extends MysqlQuery implements DatabaseInsert
 	{
 		//TODO: Transaction
 		$this->execute();
-		return mysql_insert_id($this->connection);
+		return $this->connection->lastInsertId();
 		//TODO: End transaction
 	}
 }
 
-class MysqlDelete extends MysqlQuery implements DatabaseDelete
+class PdoDelete extends PdoQuery implements DatabaseDelete
 {
 	protected $table = null;
 	protected $where = array();
 
 	/**
-	 * @return MysqlDelete
+	 * @return PdoDelete
 	 */
 	public function from($table)
 	{
@@ -694,7 +612,7 @@ class MysqlDelete extends MysqlQuery implements DatabaseDelete
 	}
 
 	/**
-	 * @return MysqlDelete
+	 * @return PdoDelete
 	 */
 	public function where($where)
 	{
@@ -703,14 +621,14 @@ class MysqlDelete extends MysqlQuery implements DatabaseDelete
 	}
 
 	/**
-	 * @return MysqlDelete
+	 * @return PdoDelete
 	 */
 	public function whereEquals($fieldsValues)
 	{
 		foreach ($fieldsValues as $field => $value)
 		{
 			$fieldUniqId = ':' . $field . substr(md5(uniqid()), 0, 8);
-			$this->where[] = $this->escapeField($field) . ' = ' . $fieldUniqId;
+			$this->where[] = $field . ' = ' . $fieldUniqId;
 			$this->with($fieldUniqId, $value);
 		}
 		return $this;
@@ -729,19 +647,19 @@ class MysqlDelete extends MysqlQuery implements DatabaseDelete
 		$where = join(' AND ', $where);
 		$this->query = sprintf('DELETE FROM %s ' .
 			(!empty($this->where)? ' WHERE %s': ''),
-			$this->escapeTable($this->table), $where);
+			$this->table, $where);
 		return parent::execute();
 	}
 }
 
-class MysqlUpdate extends MysqlQuery implements DatabaseUpdate
+class PdoUpdate extends PdoQuery implements DatabaseUpdate
 {
 	protected $table = null;
 	protected $set = array();
 	protected $where = array();
 
 	/**
-	 * @return MysqlUpdate
+	 * @return PdoUpdate
 	 */
 	public function table($table)
 	{
@@ -750,7 +668,7 @@ class MysqlUpdate extends MysqlQuery implements DatabaseUpdate
 	}
 
 	/**
-	 * @return MysqlUpdate
+	 * @return PdoUpdate
 	 */
 	public function where($where)
 	{
@@ -759,21 +677,21 @@ class MysqlUpdate extends MysqlQuery implements DatabaseUpdate
 	}
 
 	/**
-	 * @return MysqlUpdate
+	 * @return PdoUpdate
 	 */
 	public function whereEquals($fieldsValues)
 	{
 		foreach ($fieldsValues as $field => $value)
 		{
 			$fieldUniqId = ':' . $field . substr(md5(uniqid()), 0, 8);
-			$this->where[] = $this->escapeField($field) . ' = ' . $fieldUniqId;
+			$this->where[] = $field . ' = ' . $fieldUniqId;
 			$this->with($fieldUniqId, $value);
 		}
 		return $this;
 	}
 
 	/**
-	 * @return MysqlUpdate
+	 * @return PdoUpdate
 	 */
 	public function set($data)
 	{
@@ -786,9 +704,11 @@ class MysqlUpdate extends MysqlQuery implements DatabaseUpdate
 		$set = array();
 		if (is_array($set))
 		{
-			foreach ($this->set as $key => $value)
+			foreach ($this->set as $field => $value)
 			{
-				$set[] = sprintf('%s = %s', $this->escapeField($key), $this->escape($value));
+				$fieldUniqId = ':' . $field . substr(md5(uniqid()), 0, 8);
+				$this->parameters[$fieldUniqId] = $value;
+				$set[] = sprintf('%s = %s', $field, $fieldUniqId);
 			}
 		}
 		else
@@ -807,7 +727,7 @@ class MysqlUpdate extends MysqlQuery implements DatabaseUpdate
 		$where = join(' AND ', $where);
 		$this->query = sprintf('UPDATE %s SET ' . join(', ', $set) .
 			(!empty($this->where)? ' WHERE %s': ''),
-			$this->escapeTable($this->table), $where);
+			$this->table, $where);
 		return parent::execute();
 	}
 }

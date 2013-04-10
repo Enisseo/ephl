@@ -23,12 +23,11 @@ class Template
 	 * @param string $file
 	 * @param string... $folders
 	 */
-	public function __Template()
+	public function __construct()
 	{
 		$args = func_get_args();
 		if (count($args))
 		{
-			$this->file = array_shift($args);
 			$this->folders = $args;
 		}
 	}
@@ -45,11 +44,6 @@ class Template
 		}
 		user_error('No template found for "' . $name . '"', E_USER_WARNING);
 		return false;
-	}
-	
-	public function setTemplate($file)
-	{
-		$this->file = $file;
 	}
 	
 	/**
@@ -93,15 +87,15 @@ class Template
 	/**
 	 * Renders the template.
 	 */
-	public function render($_vars = array())
+	public function render($_name = null, $_vars = array())
 	{
-		if (!empty($this->file))
+		if (!empty($_name))
 		{
 			foreach ($_vars as $key => $value)
 			{
 				$$key = $value;
 			}
-			include($this->findFile($this->file));
+			include($this->findFile($_name));
 		}
 		
 		if (!empty($this->inherits))
@@ -193,21 +187,21 @@ function template_include($fileName, $vars = array())
 	$_template->insert($fileName, $vars);
 }
 
-function block($blockName)
+function template($blockName)
 {
 	global $_template;
 	if (empty($_template)) user_error('No template folder specified with template_folder[s]()', E_USER_WARNING);
 	$_template->block($blockName);
 }
 
-function block_start($blockName)
+function template_start($blockName)
 {
 	global $_template;
 	if (empty($_template)) user_error('No template folder specified with template_folder[s]()', E_USER_WARNING);
 	$_template->blockStart($blockName);
 }
 
-function block_end($blockName = null)
+function template_end($blockName = null)
 {
 	global $_template;
 	if (empty($_template)) user_error('No template folder specified with template_folder[s]()', E_USER_WARNING);

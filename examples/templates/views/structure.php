@@ -5,14 +5,14 @@
         <title></title>
     </head>
     <body>
-    	<?php block('title'); ?>
+    	<?php template('title'); ?>
     	
     	<div id="menu">
     		<?php template_include('menu'); ?>
     	</div>
     	
     	<div id="main">
-    		<?php block('main'); ?>
+    		<?php template('main'); ?>
     	</div>
     </body>
 </html>

@@ -66,7 +66,7 @@ abstract class Controller
 	 */
 	protected function post($name, $default = null)
 	{
-		return findKeyFromArray($this->request['post'], $name, $default);
+		return array_get($this->request['post'], $name, $default);
 	}
 
 	/**
@@ -77,7 +77,7 @@ abstract class Controller
 	 */
 	protected function get($name, $default = null)
 	{
-		return findKeyFromArray($this->request['get'], $name, $default);
+		return array_get($this->request['get'], $name, $default);
 	}
 	
 	/**
@@ -88,7 +88,7 @@ abstract class Controller
 	 */
 	protected function server($name, $default = null)
 	{
-		return findKeyFromArray($this->request['server'], $name, $default);
+		return array_get($this->request['server'], $name, $default);
 	}
 	
 	/**
@@ -99,7 +99,7 @@ abstract class Controller
 	 */
 	protected function cookie($name, $default = null)
 	{
-		return findKeyFromArray($this->request['cookie'], $name, $default);
+		return array_get($this->request['cookie'], $name, $default);
 	}
 
 	/**
@@ -216,7 +216,7 @@ function run($controller)
  * <p>Calls this function at the end of each page to run the controller defined in the page.
  * Register as shutdown_function if needed.</p>
  */
-function runLastController()
+function controller_runlast()
 {
 	$classes = get_declared_classes();
 	for ($c = count($classes) - 1; $c >= 0; $c--)

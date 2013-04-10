@@ -1,7 +1,7 @@
 <?php
-require_once('lib/html.php');
-require_once('lib/templates.php');
-require_once('lib/responsive.php');
+require_once(dirname(dirname(dirname(__FILE__))) . '/lib/html.php');
+require_once(dirname(dirname(dirname(__FILE__))) . '/lib/templates.php');
+require_once(dirname(dirname(dirname(__FILE__))) . '/lib/responsive.php');
 
 template_folder(realpath('tpl'));
 
@@ -28,10 +28,10 @@ if (responsive('state', null))
 
 template_inherits('main');
 
-block_start('head'); ?>
-<?php block_end();
+template_start('head'); ?>
+<?php template_end();
 
-block_start('header'); ?>
+template_start('header'); ?>
 <h1 class="title">h1.title</h1>
 <nav>
     <ul>
@@ -40,10 +40,10 @@ block_start('header'); ?>
         <li><a href="#">nav ul li a</a></li>
     </ul>
 </nav>
-<?php block_end();
+<?php template_end();
 
-block_start('container'); ?>
+template_start('container'); ?>
 <div class="Responsive" id="container">
 	Test
 </div>
-<?php block_end(); 
+<?php template_end(); 

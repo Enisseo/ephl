@@ -102,7 +102,7 @@ function responsive_init($widths = array(480, 768, 960))
 	{
 		$_responsive = new Responsive();
 	}
-	?><script><?=$_responsive->getJQueryInitCode();?></script><?php
+	?><script><?php echo $_responsive->getJQueryInitCode();?></script><?php
 }
 
 function responsive($name, $default = null)

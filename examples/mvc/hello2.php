@@ -9,4 +9,4 @@ class HelloWorldController extends Controller
 	}
 }
 
-runLastController();
+controller_runlast();

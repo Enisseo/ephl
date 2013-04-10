@@ -5,7 +5,7 @@ template_folder(dirname(__FILE__) . '/views');
 
 template_inherits('structure');
 
-block_start('main');
+template_start('main');
 
 switch (@$_GET['content']):
 	case 'a':
@@ -22,8 +22,8 @@ switch (@$_GET['content']):
 		break;
 endswitch;
 
-block_end();
+template_end();
 
-block_start('title'); ?>
+template_start('title'); ?>
 <h1>Template demo</h1>
-<?php block_end();
+<?php template_end();

@@ -14,12 +14,11 @@ class Configuration
 {
 	protected $config = array();
 	
-	public function __Configuration($file = null)
+	public function __construct($file = null)
 	{
 		if (!empty($file))
 		{
-			include($file);
-			$this->config = $config;
+			$this->load($file);
 		}
 	}
 	
@@ -49,7 +48,7 @@ class Configuration
 	}
 }
 
-function loadConfig($file)
+function config_load($file)
 {
 	global $_configuration;
 	if (empty($_configuration))
@@ -59,7 +58,7 @@ function loadConfig($file)
 	$_configuration->load($file);
 }
 
-function setConfig($key, $value)
+function config_set($key, $value)
 {
 	global $_configuration;
 	if (empty($_configuration)) user_error('No configuration file loaded with loadConfig()', E_USER_WARNING);

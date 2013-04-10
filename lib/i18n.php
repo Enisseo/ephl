@@ -154,24 +154,24 @@ function tr($message, $params = array())
 	return $_dictionary->tr($message, $params);
 }
 
-function pushDictionary($file)
+function dictionary_push($file)
 {
 	global $_dictionary;
 	if (empty($_dictionary))
 	{
 		$_dictionary = new Dictionary();
 	}
-	$_dictionary->pushDictionary($file);
+	$_dictionary->push($file);
 }
 
-function popDictionary($file = null)
+function dictionary_pop($file = null)
 {
 	global $_dictionary;
 	if (empty($_dictionary))
 	{
 		$_dictionary = new Dictionary();
 	}
-	$_dictionary->popDictionary($file);
+	$_dictionary->pop($file);
 }
 
 

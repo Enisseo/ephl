@@ -50,7 +50,7 @@ function route($urlModel, $params = null)
 			$vars[$params[$i]] = $result[$i + 1];
 		}
 		$_GET = array_merge($_GET, $vars);
-		return $vars;
+		return $vars? $vars: true;
 	}
 	return false;
 }

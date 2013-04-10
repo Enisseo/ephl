@@ -121,7 +121,7 @@ function style()
  * @param string $str
  * @return string the HTML version of the message, with some formats.
  */
-function niceHtml($str)
+function text2html($str)
 {
 	$html = html($str);
 	$html = preg_replace('#(((https?://)|(www\.))[^\<\s\./]+(?:[\./][^\<\s\./]*)+)(/|\b)#ie', 'str_replace(\'-\', \'--\', str_replace(\'_\', \'__\', \'\1\5\'))', $html);
