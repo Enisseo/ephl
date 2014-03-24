@@ -286,10 +286,24 @@ class PdoSelect extends PdoQuery implements DatabaseSelect
 	 */
 	public function whereEquals($fieldsValues)
 	{
+		$fieldsValues = array();
+		if (func_num_args() == 2)
+		{
+			$fieldsValues = array(func_get_arg(0) => func_get_arg(1));
+		}
+		else
+		{
+			$fieldsValues = func_get_arg(0);
+			if (is_string($fieldsValues))
+			{
+				$this->where[] = $this->escapeField($fieldsValues) . ' != \'\'';
+				return $this;
+			}
+		}
 		foreach ($fieldsValues as $field => $value)
 		{
 			$fieldUniqId = ':' . $field . substr(md5(uniqid()), 0, 8);
-			$this->where[] = $field . ' = ' . $fieldUniqId;
+			$this->where[] = $this->escapeField($field) . ' = ' . $fieldUniqId;
 			$this->with($fieldUniqId, $value);
 		}
 		return $this;

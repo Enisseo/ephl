@@ -270,7 +270,7 @@ class MysqlQuery implements DatabaseQuery
 		$result = mysql_query($sql, $this->connection);
 		if ($error = mysql_error($this->connection))
 		{
-			trigger_error($error . ' (' . $this->query . ')', E_USER_WARNING);
+			trigger_error($error . ' (' . $sql . ')', E_USER_WARNING);
 		}
 		return $result;
 	}
@@ -681,7 +681,7 @@ class MysqlInsert extends MysqlQuery implements DatabaseInsert
 		foreach ($this->set as $key => $value)
 		{
 			$columns[] = $this->escapeField($key);
-			$values[] = sprintf('%s', $this->escape($value));
+			$values[] = str_replace('%', '%%', sprintf('%s', $this->escape($value)));
 		}
 		$this->query = sprintf('INSERT INTO %s (' .
 			join(', ', $columns) . ') VALUES (' .
@@ -728,8 +728,22 @@ class MysqlDelete extends MysqlQuery implements DatabaseDelete
 	/**
 	 * @return MysqlDelete
 	 */
-	public function whereEquals($fieldsValues)
+	public function whereEquals()
 	{
+		$fieldsValues = array();
+		if (func_num_args() == 2)
+		{
+			$fieldsValues = array(func_get_arg(0) => func_get_arg(1));
+		}
+		else
+		{
+			$fieldsValues = func_get_arg(0);
+			if (is_string($fieldsValues))
+			{
+				$this->where[] = $this->escapeField($fieldsValues) . ' != \'\'';
+				return $this;
+			}
+		}
 		foreach ($fieldsValues as $field => $value)
 		{
 			$fieldUniqId = ':' . $field . substr(md5(uniqid()), 0, 8);
@@ -777,7 +791,7 @@ class MysqlUpdate extends MysqlQuery implements DatabaseUpdate
 	 */
 	public function where($where)
 	{
-		$this->where = $where;
+		$this->where[] = $where;
 		return $this;
 	}
 

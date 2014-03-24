@@ -110,7 +110,7 @@ interface DatabaseSelect extends DatabaseQuery
 	/**
 	 * @return DatabaseSelect
 	 */
-	public function whereEquals($fieldsValues);
+	public function whereEquals();
 
 	/**
 	 * @return DatabaseSelect
@@ -212,7 +212,7 @@ interface DatabaseDelete extends DatabaseQuery
 	/**
 	 * @return DatabaseDelete
 	 */
-	public function whereEquals($fieldsValues);
+	public function whereEquals();
 }
 
 interface DatabaseUpdate extends DatabaseQuery
