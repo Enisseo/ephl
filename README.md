@@ -12,17 +12,17 @@ never been done.
 So the point of this framework is to provide a really simple base so that you do get useful shortcuts and functions
 but are not forced to do some extra work not required, especially if you are multi-task (developer and designer).
 
-ePHL is pronounced like *Eiffel* (/ɛ.fɛl/), and could mean **e**nisseo's **PH**P **L**ibrary.
+ePHL is pronounced like *Eiffel* (/ɛ.fɛl/), and could mean **e**nisseo's **PH**P **L**ibrary or anything you want as this is a DIY acronym.
 
 
 ## MVC (is bullsh*t) ##
 
-Firstly, I want to come clear. By reading this title, you could think I have hard feelings about the 
-MVC (Mad Vulcan Cyborg) model: you would be right. But what I hate mostly, like every design pattern, is
+First, I want to come clear. By reading this title, you could think I have hard feelings about the 
+MVC (Mad Vulcan Cyborg) model: you would be totally right. But what I hate mostly, like every design pattern, is
 the overuse in contexts that are often non pertinents.
 
 In ePHL, *you* decide if you want to separate the M from the V, from the C, or even use any of this, or add
-some new letters to your model.
+some new fancy letters to your model.
 
 ePHL provides a freedom of choice in your implementation. Here is the classic "Hello, world!" in ePHL:
 
@@ -31,10 +31,10 @@ ePHL provides a freedom of choice in your implementation. Here is the classic "H
 <?php print('Hello, world!'); ?>
 ```
 
-What did you expect you damn Zend Framework lover?! Some 100-lines code example you don't even understand?!
-You want to write a f*cking "Hello, world!", *it should be as simple as that!*
+What did you expect, you ZendFramework-lover? Some 100-lines code example you don't even understand?
+You want to write "Hello, world!", *it should be as simple as that!*
 
-Now you are a bit frustrated that I didn't give you a big fat example. Ok, then you could also write:
+Now you are a bit frustrated that I didn't give you an example with the ePHL framework. Ok, then you could also write:
 
 **hello2.php**
 ```php
@@ -53,7 +53,7 @@ runLastController();
 ?>
 ```
 
-Happy? Now we added a Controller, why not a View?
+Happy? Now that we've added a Controller, why not a View?
 
 **hello3.php**
 ```php
@@ -77,22 +77,22 @@ runLastController();
 Hello, world!
 ```
 
-See! You do what you need, not what a horrible piece of software told you to. If you are like me often
+See? You do what you need, not what a horrible piece of software told you to. If you are like me often
 in charge of the PHP code as well as the HTML/CSS/Javascript code, you do not have to create 3 different
-files for each new piece of code you write if you do not want to.
+files for each new piece of code you write *if you do not want to*.
 
 
 ## Templates (the nice way) ##
 
 After reading the previous sections, you still don't know what I think of template engines? They are made
 by Satan (aka CTO) and the Four Horsemen of the Apocalypse (aka developers) and their only goal is to
-piss off every existing guy, from the developer - who would like to write some good ol' PHP code, not learn
-a new language - to the designer - who would need the developer for every 20% task the engine is not able to
-manage and who would have to learn a new language anyway.
+upset every existing guy, from the developer - who'd like to write some good ol' PHP code, not learn
+a new language - to the designer - who'd need the developer for every 20% task the engine is not able to
+manage and who'd have to learn a new language anyway.
 
 ### The good ###
 
-So, in ePHL, the template language is PHP. Plain old PHP. But as I'm a very kind person (when I'm not eating
+In ePHL, the template language is PHP. Plain PHP. But as I'm a very kind person (when I'm not eating
 kittens), I've written some functions to help you:
 
 ```php
@@ -195,13 +195,13 @@ And your templates:
 
 Do you really need more (or less) than that? You can even write or use a lot of PHP functions to ease
 the most common tasks in templates, if any ("trim", "str_replace" and so on). And if you use the Controllers,
-you can replace blocks by function calls and inheritance.
+you can replace blocks by method calls and inheritance.
 
 ### The ugly ###
 
-Maybe you'd say to me: "And what about code injection, mor*n?!". Do you really expect me to reply to insults?
-OK. Code injections are possible when a/ the code in your database is not safe or b/ you do not properly 
-escape special chars when displaying a value to HTML.
+Now you'll tell me: "And what about code injection, mor*n?!". OK. Code injections are possible 
+when a/ the code in your database is not safe or b/ you do not properly escape special chars when displaying 
+a value to HTML.
 
 This is why I've come with these two functions, "html()" and "javascript()" and I use the shorttag "<?=VAL?>":
 it allows you to easily add clean text, but more, it **makes your errors obvious to everyone**! When you are
@@ -216,12 +216,12 @@ a very hot place, especially in summer.
 
 ## ORM (is for losers) ##
 
-The SQL language is already an abstraction, d*ckhead! If you add another layer, it will only make the 20%
-non common tasks 80% harder.
+The SQL language is already an abstraction! If you add another layer, it will only make the 20% non-common 
+tasks 80% harder.
 
 In ePHL, you are provided with a clean and simple classy (I mean, with style AND php classes) version of the
 SQL language, so you can either use classes and methods to help you avoid common typos and errors 
-(like SEELCT or UPDATE table VALUES...) or write plain SQL queries, or use a mix between both universes.
+(like SEELCT or UPDATE table VALUES...) or write plain SQL queries, or use a clever mixture of both.
 
 A little portion of code will help you understand:
 
@@ -268,7 +268,7 @@ And so on...
 Did you like it? Didn't it feel obvious and natural? The more you'll use it, the more you'll like it!
 
 
-## Form generation (not for the lazy-a**) ##
+## Form generation (not for the lazy) ##
 
 ePHL does provide form generation, but it has two layers: an abstract layer, with only abstract classes definitions,
 and an implementation with ePHL own generated HTML. Like it or implement your own rendering, but the abstraction
@@ -322,6 +322,8 @@ help you with some tools and tips.
 //SQL statements
 //CSRF with post() and referer check if done right
 
+
+## Miscellaneous ##
 
 
 ## Use with other frameworks ##
