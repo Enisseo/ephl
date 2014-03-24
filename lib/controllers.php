@@ -46,16 +46,15 @@ abstract class Controller
 				$_GET = $this->request['get'];
 			}
 		}
-		foreach ($this->request as &$values)
+		if (get_magic_quotes_gpc())
 		{
-			foreach ($values as &$value)
-			{
-				if (get_magic_quotes_runtime())
-				{
-					$value = stripslashes($value);
-				}
-			}
+			array_walk_recursive($this->request, array($this, 'unquote'));
 		}
+	}
+	
+	public function unquote(&$item, $key)
+	{
+		$item = stripslashes($item);
 	}
 	
 	/**
