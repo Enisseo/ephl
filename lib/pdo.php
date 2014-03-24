@@ -5,8 +5,17 @@
  * @author Enisseo
  */
 
-require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'database.php');
- 
+if (!@include_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'database.php'))
+{
+	interface Database {};
+	interface DatabaseTransaction extends Database {};
+	interface DatabaseQuery {};
+	interface DatabaseSelect extends DatabaseQuery {};
+	interface DatabaseInsert extends DatabaseQuery {};
+	interface DatabaseDelete extends DatabaseQuery {};
+	interface DatabaseUpdate extends DatabaseQuery {};
+}
+
 /**
  * The PDO base class.
  *
@@ -45,7 +54,7 @@ class PdoDatabase implements Database
 			$query->setConnection($this->connect());
 			return $query;
 		}
-		
+
 		$connect = $this->connect();
 		$q = new PdoQuery($connect);
 		$q->is($query);
@@ -103,7 +112,7 @@ class PdoDatabase implements Database
 		}
 		return $query;
 	}
-	
+
 	/**
 	 * @return PdoTransaction
 	 */
@@ -120,17 +129,17 @@ class PdoTransaction extends PdoDatabase implements DatabaseTransaction
 	{
 		$this->connection =& $connection;
 	}
-	
+
 	public function start()
 	{
 		$this->connection->beginTransaction();
 	}
-	
+
 	public function commit()
 	{
 		$this->connection->commit();
 	}
-	
+
 	public function rollback()
 	{
 		$this->connection->rollBack();
@@ -215,7 +224,7 @@ class PdoSelect extends PdoQuery implements DatabaseSelect
 		}
 		return $this;
 	}
-	
+
 	/**
 	 * @return PdoSelect
 	 */
@@ -312,7 +321,7 @@ class PdoSelect extends PdoQuery implements DatabaseSelect
 		$this->having = $having;
 		return $this;
 	}
-	
+
 	/**
 	 * @return PdoSelect
 	 */
@@ -330,7 +339,7 @@ class PdoSelect extends PdoQuery implements DatabaseSelect
 		{
 			$fields = join(', ', $this->fields);
 		}
-		
+
 		$joins = array();
 		foreach ($this->join as $joinData)
 		{
@@ -356,7 +365,7 @@ class PdoSelect extends PdoQuery implements DatabaseSelect
 			$joins[] = sprintf('%s %s' . (!empty($joinOn)? ' ON %s': '%s'),
 				$type, $table, join(' AND ', $joinOn));
 		}
-		
+
 		$groups = array();
 		if (!empty($this->group))
 		{
@@ -365,7 +374,7 @@ class PdoSelect extends PdoQuery implements DatabaseSelect
 				$groups[] = $group . (empty($having)? '': (' HAVING ' . $having));
 			}
 		}
-		
+
 		$orders = array();
 		if (!empty($this->orders))
 		{
@@ -377,7 +386,7 @@ class PdoSelect extends PdoQuery implements DatabaseSelect
 				}
 			}
 		}
-		
+
 		$where = array();
 		foreach ($this->where as $clause)
 		{
@@ -398,7 +407,7 @@ class PdoSelect extends PdoQuery implements DatabaseSelect
 			join(' AND ', $where),
 			join(', ', $groups),
 			join(', ', $orders));
-		
+
 		return parent::execute();
 	}
 
@@ -460,7 +469,7 @@ class PdoSelect extends PdoQuery implements DatabaseSelect
 		$res->closeCursor();
 		return $result;
 	}
-	
+
 	/**
 	 * This is an alias of MysqlSelect::fetchArrayByKey
 	 * @return array
@@ -715,7 +724,7 @@ class PdoUpdate extends PdoQuery implements DatabaseUpdate
 		{
 			$set[] = $set;
 		}
-		
+
 		$where = array();
 		foreach ($this->where as $clause)
 		{

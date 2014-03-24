@@ -5,8 +5,17 @@
  * @author Enisseo
  */
 
-require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'database.php');
- 
+if (!@include_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'database.php'))
+{
+	interface Database {};
+	interface DatabaseTransaction extends Database {};
+	interface DatabaseQuery {};
+	interface DatabaseSelect extends DatabaseQuery {};
+	interface DatabaseInsert extends DatabaseQuery {};
+	interface DatabaseDelete extends DatabaseQuery {};
+	interface DatabaseUpdate extends DatabaseQuery {};
+}
+
 /**
  * The MySQL base class.
  *
@@ -48,7 +57,7 @@ class Mysql implements Database
 			$query->setConnection($this->connect(), $this->schema);
 			return $query;
 		}
-		
+
 		$connect = $this->connect();
 		$q = new MysqlQuery($connect, $this->schema);
 		$q->is($query);
@@ -106,7 +115,7 @@ class Mysql implements Database
 		}
 		return $query;
 	}
-	
+
 	/**
 	 * @return MysqlTransaction
 	 */
@@ -123,19 +132,19 @@ class MysqlTransaction extends Mysql implements DatabaseTransaction
 	{
 		$this->connection =& $connection;
 	}
-	
+
 	public function start()
 	{
 		$this->query('SET AUTOCOMMIT = 0')->execute();
 		$this->query('START TRANSACTION')->execute();
 	}
-	
+
 	public function commit()
 	{
 		$this->query('COMMIT')->execute();
 		$this->query('START TRANSACTION')->execute();
 	}
-	
+
 	public function rollback()
 	{
 		$this->query('ROLLBACK')->execute();
@@ -203,7 +212,7 @@ class MysqlQuery implements DatabaseQuery
 			default: return '\''.mysql_real_escape_string($value, $this->connection).'\'';
 		}
 	}
-	
+
 	protected function escapeField($field)
 	{
 		if (strpos('`', $field) !== false) return $field;
@@ -239,7 +248,7 @@ class MysqlQuery implements DatabaseQuery
 		}
 		return $fieldEscaped;
 	}
-	
+
 	protected function escapeTable($table)
 	{
 		if (strpos('`', $table) !== false) return $field;
@@ -292,7 +301,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 		}
 		return $this;
 	}
-	
+
 	/**
 	 * @return MysqlSelect
 	 */
@@ -352,8 +361,22 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 	/**
 	 * @return MysqlSelect
 	 */
-	public function whereEquals($fieldsValues)
+	public function whereEquals()
 	{
+		$fieldsValues = array();
+		if (func_num_args() == 2)
+		{
+			$fieldsValues = array(func_get_arg(0) => func_get_arg(1));
+		}
+		else
+		{
+			$fieldsValues = func_get_arg(0);
+			if (is_string($fieldsValues))
+			{
+				$this->where[] = $this->escapeField($fieldsValues) . ' != \'\'';
+				return $this;
+			}
+		}
 		foreach ($fieldsValues as $field => $value)
 		{
 			$fieldUniqId = ':' . $field . substr(md5(uniqid()), 0, 8);
@@ -389,7 +412,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 		$this->having = $having;
 		return $this;
 	}
-	
+
 	/**
 	 * @return MysqlSelect
 	 */
@@ -412,7 +435,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 			}
 			$fields = join(', ', $fields);
 		}
-		
+
 		$joins = array();
 		foreach ($this->join as $joinData)
 		{
@@ -438,7 +461,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 			$joins[] = sprintf('%s %s' . (!empty($joinOn)? ' ON %s': '%s'),
 				$type, $this->escapeTable($table), join(' AND ', $joinOn));
 		}
-		
+
 		$groups = array();
 		if (!empty($this->group))
 		{
@@ -447,7 +470,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 				$groups[] = $this->escapeField($group) . (empty($having)? '': (' HAVING ' . $having));
 			}
 		}
-		
+
 		$orders = array();
 		if (!empty($this->orders))
 		{
@@ -459,7 +482,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 				}
 			}
 		}
-		
+
 		$where = array();
 		foreach ($this->where as $clause)
 		{
@@ -480,7 +503,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 			join(' AND ', $where),
 			join(', ', $groups),
 			join(', ', $orders));
-		
+
 		return parent::execute();
 	}
 
@@ -547,7 +570,7 @@ class MysqlSelect extends MysqlQuery implements DatabaseSelect
 		}
 		return $result;
 	}
-	
+
 	/**
 	 * This is an alias of MysqlSelect::fetchArrayByKey
 	 * @return array
@@ -763,6 +786,20 @@ class MysqlUpdate extends MysqlQuery implements DatabaseUpdate
 	 */
 	public function whereEquals($fieldsValues)
 	{
+		$fieldsValues = array();
+		if (func_num_args() == 2)
+		{
+			$fieldsValues = array(func_get_arg(0) => func_get_arg(1));
+		}
+		else
+		{
+			$fieldsValues = func_get_arg(0);
+			if (is_string($fieldsValues))
+			{
+				$this->where[] = $this->escapeField($fieldsValues) . ' != \'\'';
+				return $this;
+			}
+		}
 		foreach ($fieldsValues as $field => $value)
 		{
 			$fieldUniqId = ':' . $field . substr(md5(uniqid()), 0, 8);
@@ -795,7 +832,7 @@ class MysqlUpdate extends MysqlQuery implements DatabaseUpdate
 		{
 			$set[] = $set;
 		}
-		
+
 		$where = array();
 		foreach ($this->where as $clause)
 		{
