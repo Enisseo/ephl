@@ -282,7 +282,7 @@ is only here to provide a classic flow for processing forms:
 
 ## URL mapping (if you do it yourself) ##
 
-I personnally prefer having the file "a/b/c.php" behind of the URL "a/b/c", and not loaded by a series
+I personnally prefer having the file "a/b/c.php" behind of the URL "a/b/c", not loaded by a series
 of PHP scripts that I do not understand. Anyway, ePHL lets you do what you want, so if you love URL 
 mapping (I don't, but hey! everyone gets to have its little fantasies) you sure can implement that by yourself.
 
@@ -331,12 +331,12 @@ help you with some tools and tips.
 What?! Did you even read what I'd just explained to you?! Well, there are certainly two cases when you
 have this issue:
 
-### You want a stable (as in smelly and obese) framework but you like some ephl features ###
+### You want a stable (as in smelly and obese) framework but you like some ePHL features ###
 
 First: the main thing about ePHL is the simplicity and small amount of code and included files. If you use a
 monster framework you will annihilate any advantages ePHL has.
 
-The big problem is that other frameworks often use a dirty URL mapping, MVC and sometimes template engines.
+The big problem is that other frameworks often use class autoloader, URL mapping, MVC and sometimes template engines.
 So, you will certainly have some troube mixing ePHL with them. Your best chance might be to use the other 
 framework as the main framework and add some of the functions or classes of ephl you extracted manually from
 the source code.
@@ -352,8 +352,8 @@ Zend Framework?) and you'd like to get it for free.
 Well, ePHL do not constraint you so you can add your own classes, files and libraries pretty easily. You 
 should not encounter any issue, except for name conflicts.
 
-However, if you need a feature that ephl has not, maybe it can be of any interest for other users, so you
-may want to share it so we can all enjoy the library of re-write one in the ephl spirit (one file, classes
+However, if you need a feature that ephl has not, maybe it can be of any interest for other users. So you
+may want to share it so we can all enjoy the library of re-write one in the ePHL spirit (one file, classes
 only if needed...).
 
 
@@ -361,5 +361,5 @@ only if needed...).
 
 ePHL is still in development (and will always be in constant evolution due to the evil nature of the web).
 If you want to add some features, well, discuss it with me first so we can see if it has a chance to be
-in the core. If you want some features added (by someone else), you'll have to talk to me about it, then being
-called a d*ck, then get the f*ck off, then wait and maybe one day you'll see it!
+in the core. If you want some features added (by someone else), you'll have to talk to me about it, then 
+wait, and maybe one day you'll see it!
