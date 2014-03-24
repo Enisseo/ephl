@@ -62,7 +62,7 @@ function image($src, $width = 0, $height = 0, $mode = IMAGE_MODE_ADJUST, $masks 
 {
 	$sourceDir = defined('IMAGE_SOURCE_FOLDER')? IMAGE_SOURCE_FOLDER: '';
 	$cacheDir = defined('IMAGE_CACHE_FOLDER')? IMAGE_CACHE_FOLDER: ('cache' . DIRECTORY_SEPARATOR);
-	$urlDir = defined('IMAGE_URL_BASE')? IMAGE_URL_BASE: ('cache/');
+	$urlDir = defined('IMAGE_URL_BASE')? IMAGE_URL_BASE: ('cache' . DIRECTORY_SEPARATOR);
 
 	if (!empty($masks))
 	{
@@ -119,7 +119,7 @@ function image($src, $width = 0, $height = 0, $mode = IMAGE_MODE_ADJUST, $masks 
 				$data['height'] = $imageInfo[1];
 				$data['path'] = $filePath;
 				$data['url'] = $fileUrl;
-				return $filePath;
+				return $fileName;
 			}
 		}
 	}
@@ -394,7 +394,7 @@ function image($src, $width = 0, $height = 0, $mode = IMAGE_MODE_ADJUST, $masks 
 	$data['path'] = $filePath;
 	$data['url'] = $fileUrl;
 
-	return $filePath;
+	return $fileName;
 }
 
 /**
@@ -423,4 +423,42 @@ function htmlimage($src, $width = 0, $height = 0, $mode = IMAGE_MODE_ADJUST, $ma
 	}
 
 	return sprintf('<img src="%s" width="%d" height="%d" %s />', $data['url'], $data['width'], $data['height'], is_string($html)? $html: '');
+}
+
+// As seen on http://stackoverflow.com/questions/3657023/how-to-detect-shot-angle-of-photo-and-auto-rotate-for-website-display-like-desk
+/**
+ * Correct image orientation
+ */
+function imageautorotate($filepath)
+{
+	if (function_exists('exif_read_data'))
+	{
+		$exif = @exif_read_data($filepath);
+		if (!empty($exif) && !empty($exif['Orientation']))
+		{
+			$deg = 0;
+			$mirror = false;
+			switch ($exif['Orientation'])
+			{
+	            case 2: $mirror = true; break;
+	            case 3: $deg = 180; break;
+	            case 4: $deg = 180; $mirror = true; break;
+	            case 5: $deg = 270; $mirror = true; break;
+	            case 6: $deg = 270; break;
+	            case 7: $deg = 90; $mirror = true; break;
+	            case 8: $deg = 90; break;
+			}
+			
+			if ($deg || $mirror)
+			{
+				$img = imagecreatefromjpeg($filepath);
+	            if ($deg)
+	            {
+	            	$img = imagerotate($img, $deg, 0);
+				}
+				//if ($mirror) $img = _mirrorImage($img);
+				imagejpeg($img, $filepath, 95);
+			}
+		}
+	}
 }
