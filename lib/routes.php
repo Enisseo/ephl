@@ -13,7 +13,7 @@ function route($urlModel, $params = null)
 	
 	if (is_null($request))
 	{
-		$request = $_SERVER['REQUEST_URI'];
+		$request = preg_replace('/\?.*$/', '', $_SERVER['REQUEST_URI']);
 		$currentDir = preg_replace('#[/\\\]#', '/', dirname($_SERVER['SCRIPT_NAME']) . '/');
 		
 		$l = strlen($currentDir);
