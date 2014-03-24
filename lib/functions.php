@@ -53,7 +53,7 @@ function url($url = null, $parameters = null, $keepParameters = null)
 		}
 		if ($url == '/')
 		{
-			$url = (defined('BASE_URL')? BASE_URL: '');
+			$url = (defined('BASE_URL')? BASE_URL: '/');
 		}
 	}
 	$info = parse_url($url);
@@ -87,6 +87,19 @@ function url($url = null, $parameters = null, $keepParameters = null)
 	if (!empty($info['fragment'])) $url .= '#' . $info['fragment'];
 	return $url;
 }
+
+
+/**
+ * Redirects to the given URL.
+ * 
+ * @param string $url
+ */
+function redirect($url)
+{
+	header('Location: ' . $url);
+	exit();
+}
+
 
 /**
  * Converts a string into an object.
@@ -203,7 +216,7 @@ function array_listsort($arrayWithKeys, $keysInOrder)
  * @return mixed
  * @see setValueToKeyInArray()
  */
-function array_get(&$array, $key, $default = null)
+function array_get($array, $key, $default = null)
 {
 	if (isset($array[$key]))
 	{
@@ -311,40 +324,6 @@ function colormix($color1, $color2, $pc = 0.5)
 		$color .= sprintf('%02s', dechex(round($comp1Dec * (1 - $pc) + ($comp2Dec * $pc))));
 	}
 	return $color;
-}
-
-
-/**
- * Formats a date according to a format.
- *
- * @param string $format the format, similar to date().
- * @param mixed $date the date, either a timestamp or a formatted date (Y-m-d)
- * @return string
- */
-function datef($format, $date)
-{
-	if (!is_numeric($date))
-	{
-		if ($date instanceof DateTime)
-		{
-			$date = $date->format('U');
-		}
-		else
-		{
-			$date = strtotime($date);
-		}
-	}
-	if ($date !== false)
-	{
-		$dateNamesFormats = array('%a', '%A', '%b', '%B');
-		$dateNames = preg_split('/,/', strftime(join(',', $dateNamesFormats), $date));
-		for ($d = count($dateNamesFormats) - 1; $d >= 0; $d--)
-		{
-			$format = str_replace($dateNamesFormats[$d], tr($dateNames[$d]), $format);
-		}
-		return strftime($format, $date);
-	}
-	return $date;
 }
 
 
@@ -498,6 +477,74 @@ function startswith($str, $start)
 {
 	return strlen($str) >= strlen($start)? (substr($str, 0, strlen($start)) == $start): false;
 }
+
+
+/**
+ * Returns the date as a DATETIME format (YYYY-MM-DD HH:MM:SS)
+ * 
+ * @param int $tstamp the timestamp, current datetime by default
+ * @return string
+ */
+function datetime($tstamp = null)
+{
+	return date('Y-m-d H:i:s', $tstamp? $tstamp: time());
+}
+
+
+/**
+ * Returns the date as a DATE format (YYYY-MM-DD)
+ * 
+ * @param int $tstamp the timestamp, current datetime by default
+ * @return string
+ */
+function day($tstamp = null)
+{
+	return date('Y-m-d', $tstamp? $tstamp: time());
+}
+
+
+/**
+ * Returns the current date as a DATE format (YYYY-MM-DD)
+ * 
+ * @return string
+ */
+function today()
+{
+	return date('Y-m-d', time());
+}
+
+
+/**
+ * Evaluates the given date with days added and returns as a DATE format (YYYY-MM-DD)
+ * 
+ * @param string $dateStr the date in the DATE format
+ * @param int $days the number of days to add (or remove if negative)
+ * @return string the new date in the DATE format
+ */
+function dateadd($dateStr, $days)
+{
+	$date = date_create($dateStr);
+	list($y, $m, $d) = preg_split('/\-/', $date->format('Y-m-d'));
+	$tstampDate = mktime(0, 0, 0, $m, $d + $days, $y);
+	return date('Y-m-d', $tstampDate);
+}
+
+
+/**
+ * Evaluates the given date with months added and returns as a DATE format (YYYY-MM-DD)
+ * 
+ * @param string $dateStr the date in the DATE format
+ * @param int $months the number of months to add (or remove if negative)
+ * @return string the new date in the DATE format
+ */
+function monthadd($dateStr, $months)
+{
+	$date = date_create($dateStr);
+	list($y, $m, $d) = preg_split('/\-/', $date->format('Y-m-d'));
+	$tstampDate = mktime(0, 0, 0, $m + $months, $d, $y);
+	return date('Y-m-d', $tstampDate);
+}
+
 
 /**
  * Returns the msec since last tick.
