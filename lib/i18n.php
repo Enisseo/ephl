@@ -56,6 +56,25 @@ class Dictionary
 		
 		return $_translatedMessage;
 	}
+
+	/**
+	 * Tries to find the key used to translate a message.
+	 * 
+	 * @return string the key or null if not found
+	 */
+	public function rt($message)
+	{
+		$_originalMessage = null;
+		foreach ($this->tr as $file => $tr)
+		{
+			$key = array_search($message, $tr);
+			if ($key !== false)
+			{
+				$_originalMessage = $key;
+			}
+		}
+		return $_originalMessage;
+	}
 	
 	/**
 	 * Adds a dictionary file to the list of translations.
@@ -154,6 +173,16 @@ function tr($message, $params = array())
 	return $_dictionary->tr($message, $params);
 }
 
+function rt($message)
+{
+	global $_dictionary;
+	if (empty($_dictionary))
+	{
+		$_dictionary = new Dictionary();
+	}
+	return $_dictionary->rt($message);
+}
+
 function dictionary_push($file)
 {
 	global $_dictionary;
@@ -173,5 +202,4 @@ function dictionary_pop($file = null)
 	}
 	$_dictionary->pop($file);
 }
-
 
