@@ -11,15 +11,21 @@ require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'functions.php');
  */
 abstract class Form
 {
-	protected $method = 'post';
-	protected $action = '';
-	protected $components = array();
-	protected $actions = array();
+	public $method = 'post';
+	public $action = '';
+	public $enctype = 'application/x-www-form-urlencoded';
+	public $components = array();
+	public $actions = array();
 
 	/**
 	 * Initializes a form with a set of params.
 	 */
 	public function __construct($params = array())
+	{
+		$this->set($params);
+	}
+	
+	public function set($params = array())
 	{
 		foreach ($params as $key => $value)
 		{
@@ -41,6 +47,29 @@ abstract class Form
 			$this->addComponent($component);
 		}
 		return $this;
+	}
+	
+	public function getComponentByName($name)
+	{
+		foreach ($this->components as $component)
+		{
+			if ($component instanceof FormGroup)
+			{
+				$foundComponent = $component->getComponentByName($name);
+				if (!empty($foundComponent))
+				{
+					return $foundComponent;
+				}
+			}
+			elseif ($component instanceof FormField)
+			{
+				if ($component->name == $name)
+				{
+					return $component;
+				}
+			}
+		}
+		return null;
 	}
 
 	public function addAction(FormAction $action)
@@ -132,12 +161,17 @@ abstract class Form
  */
 abstract class FormComponent
 {
-	protected $form = null;
+	public $form = null;
 
 	/**
 	 * Initializes a component with a set of params.
 	 */
 	public function __construct($params = array())
+	{
+		$this->set($params);
+	}
+	
+	public function set($params = array())
 	{
 		foreach ($params as $key => $value)
 		{
@@ -177,12 +211,15 @@ abstract class FormComponent
  */
 abstract class FormField extends FormComponent
 {
-	protected $name = null;
-	protected $value = null;
+	public $name = null;
+	public $value = null;
 
 	public function populate(&$data)
 	{
-		$this->value = $data[$this->name];
+		if (array_key_exists($this->name, $data))
+		{
+			$this->value = $data[$this->name];
+		}
 	}
 
 	public function validate(&$data)
@@ -204,22 +241,55 @@ abstract class FormField extends FormComponent
 
 abstract class FormGroup extends FormComponent
 {
-	protected $components = array();
+	public $components = array();
+	
+	public function setForm(&$form)
+	{
+		parent::setForm($form);
+		
+		foreach ($this->components as $component)
+		{
+			$component->setForm($this->form);
+		}
+	}
 	
 	public function addComponent(FormComponent $component)
 	{
 		$this->components[] = $component;
-		$component->setForm($this);
+		$component->setForm($this->form);
 		return $this;
 	}
 
 	public function addComponents($components)
 	{
-		foreach ($components as $components)
+		foreach ($components as $component)
 		{
 			$this->addComponent($component);
 		}
 		return $this;
+	}
+	
+	public function getComponentByName($name)
+	{
+		foreach ($this->components as $component)
+		{
+			if ($component instanceof FormGroup)
+			{
+				$foundComponent = $component->getComponentByName($name);
+				if (!empty($foundComponent))
+				{
+					return $foundComponent;
+				}
+			}
+			elseif ($component instanceof FormField)
+			{
+				if ($component->name == $name)
+				{
+					return $component;
+				}
+			}
+		}
+		return null;
 	}
 
 	public function populate(&$data)
@@ -246,9 +316,14 @@ abstract class FormGroup extends FormComponent
  */
 abstract class FormAction
 {
-	protected $name = null;
+	public $name = null;
 	
 	public function __construct($params = array())
+	{
+		$this->set($params);
+	}
+	
+	public function set($params = array())
 	{
 		foreach ($params as $key => $value)
 		{
