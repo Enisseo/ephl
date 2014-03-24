@@ -143,7 +143,7 @@ class Template
 	}
 	
 	/**
-	 * Pritns a defined block.
+	 * Prints a defined block.
 	 */
 	public function block($name)
 	{
@@ -190,26 +190,39 @@ function template_include($fileName, $vars = array())
 function template($blockName)
 {
 	global $_template;
-	if (empty($_template)) user_error('No template folder specified with template_folder[s]()', E_USER_WARNING);
+	if (empty($_template))
+	{
+		$_template = new Template();
+	}
 	$_template->block($blockName);
 }
 
 function template_start($blockName)
 {
 	global $_template;
-	if (empty($_template)) user_error('No template folder specified with template_folder[s]()', E_USER_WARNING);
+	if (empty($_template))
+	{
+		$_template = new Template();
+	}
 	$_template->blockStart($blockName);
 }
 
 function template_end($blockName = null)
 {
 	global $_template;
-	if (empty($_template)) user_error('No template folder specified with template_folder[s]()', E_USER_WARNING);
+	if (empty($_template))
+	{
+		$_template = new Template();
+	}
 	$_template->blockEnd($blockName);
 }
 
 function template_render()
 {
 	global $_template;
+	if (empty($_template))
+	{
+		$_template = new Template();
+	}
 	$_template->render();
 }
